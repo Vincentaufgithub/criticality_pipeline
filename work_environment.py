@@ -1,6 +1,6 @@
 # %%
 
-import pynapple as nap
+#import pynapple as nap
 from collections import namedtuple
 from scipy.io import loadmat
 import numpy as np
@@ -41,17 +41,11 @@ animals_dict = {
 # so far, we'll only do one animal at once
 # if we want, we can later iterate over a list of animals, but I would add this at the very end
 animal = animals_dict["fra"]
-areas = ["CA1", "CA3"]
+area_list = ["CA1", "CA3"]
 
 
-### Create a dictionary with information on the recordings
-# containing one pandas.df for each recorded area
-# with the following column names:
-# ['spikewidth', 'meanrate', 'numspikes', 'area', 'tetnum', 'neuron_id'
-
-
-#cellinfo_dict_sorted_by_area = tools.create_sorted_dict_with_cellinfos(animal)
-
+cellinfo_dict_sorted_by_area = tools.create_sorted_dict_with_cellinfos(animal)
+print(cellinfo_dict_sorted_by_area.keys())
 # we now have all the neuron keys and know which brain area the belong to.
 # next, we need to find out in which epoch the animal was resting and in which epoch the animal was running
 # as far as I understood, pynapple is not yet able to support us here
@@ -59,7 +53,20 @@ areas = ["CA1", "CA3"]
 
 
 
+# for each experimental day, animals have a "task"-file
+# where are things specified such as the behaviour, environment, ... for each recording epoch.
+# this function returns a dict, with the different animal states as keys
+# usually, we only expect and use the states "sleep" and "run"
+# the dict shows us, on which days and in which epochs the animal was in a specific state
+
 taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
+# the two tasks above were general for all combinations
+
+
+# now, we loop through all areas that interest us.
+for area in area_list:
+
+    tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
 
 
 # %%
