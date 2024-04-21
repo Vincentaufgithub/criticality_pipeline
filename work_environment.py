@@ -96,4 +96,4 @@ plt.legend()
 plt.savefig("/home/dekorvyb/trash/graphic.png")
 print("saved succesfully")
 # - Hoorray! It finally looks the way we want to
-
+print("test for github")
