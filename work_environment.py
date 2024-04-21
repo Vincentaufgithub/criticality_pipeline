@@ -70,6 +70,9 @@ for area in area_list:
 
 
 # %%
+# below is just experimental to understand the interplay of pynapple and mrestimator
+
+
 
 neuron_key = ("bon", 1,1,1,1)
 name, day, epoch, tetrode_number, neuron_number = neuron_key
