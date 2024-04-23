@@ -10,6 +10,8 @@ def group_df_to_dict(df, label):
         dfs[idx] = group.copy()
     return dfs
 
+
+
 def load_task_file(file_name, animal):
     '''
     This function is mostly taken from loren frank lab.
@@ -47,9 +49,10 @@ def load_task_file(file_name, animal):
     return df
 
 
-def get_matching_pairs(dataframe, multiindex):
+def match_neuron_key_to_state(dataframe, multiindex):
+    
+    # bc first element in each index is the animal name
     valid_entries = [row_index[1:] for row_index in multiindex]
-    print(valid_entries)
     df_entries = [(row_index[2],row_index[4]) for row_index in dataframe.index]
     
     matching_entries = [entry for entry in valid_entries if entry in df_entries]
@@ -60,3 +63,52 @@ def get_matching_pairs(dataframe, multiindex):
         filtered_dataframe = pd.concat([filtered_dataframe, temp_dataframe])
 
     return filtered_dataframe
+
+
+def get_epochs_by_day(multi_index):
+    '''
+    Returns: A dict with keys days, and values lists of epochs per day
+    '''
+    epochs_by_day = {}
+    
+    for index in multi_index:
+        day = index[1]
+        epoch = index[2]
+        
+        if day in epochs_by_day:
+            if epoch not in epochs_by_day[day]:
+                epochs_by_day[day].append(epoch)    
+        else:
+            epochs_by_day[day] = [epoch]
+    
+    return epochs_by_day
+
+
+
+
+def add_neuron_keys_to_state_dict(get_epochs_per_day_dict, neuron_id_list):
+    '''
+    Input: epochs_per_day_dict with days as keys and lists of epochs per day as values
+    
+    Returns: embedded dict of dicts, where the outer dict contains the days as keys and the epoch dicts as (values/sub-keys).
+             The inner values are the neuron ids per epoch (inner dict) per day (outer dict)
+    '''
+    epochs_per_day_dict = {}
+    neuron_id_component_list = []
+    
+    for neuron_key_str in neuron_id_list:
+        animal_short_name, day_number, epoch_number, tetrode_number, neuron_number = neuron_key_str.split("_")
+        neuron_id_component_list.append((animal_short_name, day_number, epoch_number, tetrode_number, neuron_number))
+    
+    for key in get_epochs_per_day_dict:
+        inner_dict = {}
+        for value in get_epochs_per_day_dict[key]:
+            inner_dict[value] = []
+            for neuron_id in neuron_id_component_list:
+                if neuron_id[1] == '0'+str(key) and neuron_id[2] == '0'+str(value):
+                    inner_dict[value].append('_'.join(neuron_id))
+        epochs_per_day_dict[key] = inner_dict
+    return epochs_per_day_dict
+
+
+
