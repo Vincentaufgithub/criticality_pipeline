@@ -45,7 +45,7 @@ area_list = ["CA1", "CA3"]
 
 
 cellinfo_dict_sorted_by_area = tools.create_sorted_dict_with_cellinfos(animal)
-print(cellinfo_dict_sorted_by_area.keys())
+#print(cellinfo_dict_sorted_by_area.keys())
 # we now have all the neuron keys and know which brain area the belong to.
 # next, we need to find out in which epoch the animal was resting and in which epoch the animal was running
 # as far as I understood, pynapple is not yet able to support us here
@@ -64,9 +64,11 @@ taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
 
 
 # now, we loop through all areas that interest us.
+# so finally, we should have wake_df and sleep_df for both areas, so 4 dfs in total
+
 for area in area_list:
 
-    tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
+    wake_df, sleep_df = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
 
 
 # %%
