@@ -2,7 +2,7 @@ from scipy.io import loadmat
 import loren_frank_data_processing.neurons as lf_neurons 
 import pandas as pd
 from glob import glob
-import utilities.data_preparation as prep
+import utilities.load_recording_information as rec_info
 
 
 
@@ -34,7 +34,6 @@ def create_sorted_dict_with_cellinfos(animal):
     
     
     # using loren frank lab, we create a dataframe containing all neuron info for a given animal
-    # please don't ask me how it works. It just does, somehow.
     # the function from loren frank lab also creates a unique neuron key for each recorded unit - pretty cool!
     neuron_info_dataframe = pd.concat([
         lf_neurons.convert_neuron_epoch_to_dataframe(epoch, animal.short_name, day_ind + 1, epoch_ind + 1)
@@ -44,7 +43,9 @@ def create_sorted_dict_with_cellinfos(animal):
     
     # print all the areas that were recorded
     # print(neuron_info_dataframe.columns.names)
-    neuron_info_dict = prep.group_df_to_dict(neuron_info_dataframe, "area")
+    
+    # sort the information according to recording area into a dict
+    neuron_info_dict = rec_info.group_df_to_dict(neuron_info_dataframe, "area")
     
     return neuron_info_dict
 
@@ -74,12 +75,14 @@ def create_sorted_dict_with_tasks(animal):
     # find the names of all task files
     task_files = glob(f"{animal.directory}{animal.short_name}task*.mat"  )
     
-    task_file_df = pd.concat( prep.load_task_file(task_file, animal) for task_file in task_files)
+    # gives us the information of all recording epochs in one df
+    task_file_df = pd.concat( rec_info.load_task_file(task_file, animal) for task_file in task_files)
 
-    task_files_dict_sorted = prep.group_df_to_dict(task_file_df, "type")
+    # sort the information into a dict, according to the state the animal was in
+    task_files_dict_sorted = rec_info.group_df_to_dict(task_file_df, "type")
     
-    # print all the different states that were defined
-    #print(task_files_dict_sorted.keys())
+    # print all the different states that were defined by the lab
+    # print(task_files_dict_sorted.keys())
     
     return task_files_dict_sorted
 
@@ -87,7 +90,7 @@ def create_sorted_dict_with_tasks(animal):
 
 def create_neuron_dicts_for_each_state(cellinfo_df, taskinfo_dict):
     '''
-    Creates two nested dictionarys for a given brain area, allowing to access the neuron_keys via day and epoch
+    Creates nested dict for a given brain area, allowing to access the neuron_keys via state, day and epoch
     ---------------
     parameters:
     
@@ -99,43 +102,40 @@ def create_neuron_dicts_for_each_state(cellinfo_df, taskinfo_dict):
     ----------------
     returns:
     
-    day_epoch_neuron_state_dict : dictionary
-        returns one for each state: "run" and "sleep".
-        a nested dictionary specific to animal, recording area and animal state (run or sleep).
-        With the folloeing structure:
+    state_day_epoch_neuron_dict : dictionary
+        a nested dictionary specific to animal, and recording area.
+        With the following structure:
         
-        {day:
-            {epoch:
-                [list of neuron_keys]
-        }}
+        {state:
+            {day:
+                {epoch:
+                    [list of neuron_keys]
+        }}}
+        
+    (state will either be "wake" or "sleep".)
     
     '''
-    # in this list, we'll store the df for run and sleep state
+    # in this list, we'll store the df for wake and sleep state
     dict_list = []
     
     for state in ["run", "sleep"]:
         
         # selects all the neurons out of cellinfo_df which belong to state x
-        neuron_keys_for_state_df = prep.match_neuron_key_to_state(cellinfo_df, taskinfo_dict[state,].index)
+        neuron_keys_for_state_df = rec_info.match_neuron_key_to_state(cellinfo_df, taskinfo_dict[state,].index)
 
+        # dict containing all the epochs that were in state x
+        # {day_n: [epochs]}
+        day_epoch_dict = rec_info.get_epochs_by_day(neuron_keys_for_state_df.index)
         
-        # the index being apparently just the neuron keys
-        # returns a dictionary
-        # key : day (int)
-        # values: list of epochs (int)
-        # so this gives us all the epochs that were in given state
-        state_day_epoch_dict = prep.get_epochs_by_day(neuron_keys_for_state_df.index)
-        
-        
-        
-        # adds all the neuron keys of state_df to state_day_epoch_dict
-        day_epoch_neuron_state_dict = prep.add_neuron_keys_to_state_dict(
-            state_day_epoch_dict, 
+        # adds all the neuron keys of neuron_keys_for_state_df to day_epoch_dict
+        day_epoch_neuron_dict = rec_info.add_neuron_keys_to_state_dict(
+            day_epoch_dict, 
             neuron_keys_for_state_df['neuron_id'].tolist())
         
-        
-        dict_list.append(day_epoch_neuron_state_dict)
-    
-    return dict_list[0], dict_list[1]
+        dict_list.append(day_epoch_neuron_dict)
    
-
+    # merge both dicts
+    state_day_epoch_neuron_dict = {"wake": dict_list[0],
+                "sleep": dict_list[1]}
+    
+    return state_day_epoch_neuron_dict
