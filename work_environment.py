@@ -1,15 +1,15 @@
 # %%
 
 #import pynapple as nap
+#import mrestimator as mre
+
 from collections import namedtuple
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
-import mrestimator as mre
 import matplotlib.pyplot as plt
 
 import tools
-# %%
 
 
 ### Creating dictionary with animal file paths
@@ -64,11 +64,13 @@ taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
 
 
 # now, we loop through all areas that interest us.
-# so finally, we should have wake_df and sleep_df for both areas, so 4 dfs in total
-
 for area in area_list:
 
-    wake_df, sleep_df = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
+    # dict looks like:
+    # {state: {day: {epoch: [list of neuron keys]}}}
+    # states are "wake" and "sleep"
+    state_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
+
 
 
 # %%
