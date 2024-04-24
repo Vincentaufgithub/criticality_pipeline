@@ -12,13 +12,11 @@ import matplotlib.pyplot as plt
 import tools
 
 
-### Creating dictionary with animal file paths
-### to efficiently switch between animals and fetch the names of existing files
-# ### Defining each animal via its short name and its directory
+#Creating dictionary with animal file paths
+#to efficiently switch between animals and fetch the names of existing files
+# Defining each animal via its short name and its directory
 Animal = namedtuple('Animal', {'short_name', 'directory'})
 
-# remy not working AT ALL
-# so far, you also need to update the animals_dict in pipeline.lfp_data_to_dataframe. Workin on that
 animals_dict = {
            'fra' : Animal(short_name = 'fra', directory = '/local2/Jan/Frank/Frank/'),
            'gov' : Animal(short_name = 'gov', directory = '/local2/Jan/Government/Government/'),
@@ -36,41 +34,36 @@ animals_dict = {
             }
 
 
+# might be useful to write a function which loads the cellinfo files for all animals in animals_dict.
+# so we would get an overview of all the areas that were recorded for each animal.
 
-### define animal we want to look at
+
+# define animal we want to look at
 # so far, we'll only do one animal at once
 # if we want, we can later iterate over a list of animals, but I would add this at the very end
 animal = animals_dict["fra"]
 area_list = ["CA1", "CA3"]
 
-
+# loads the cellinfo file for given animal and sorts information according to recording area. Creates unique neuron keys.
+# print(cellinfo_dict_sorted_by_area.keys()) # shows all the areas that were recorded in given animal
 cellinfo_dict_sorted_by_area = tools.create_sorted_dict_with_cellinfos(animal)
-#print(cellinfo_dict_sorted_by_area.keys())
-# we now have all the neuron keys and know which brain area the belong to.
-# next, we need to find out in which epoch the animal was resting and in which epoch the animal was running
-# as far as I understood, pynapple is not yet able to support us here
-# that is because we are working with matlab files. Pynapple is written for nwb files. :(
 
-
-
-# for each experimental day, animals have a "task"-file
-# where are things specified such as the behaviour, environment, ... for each recording epoch.
-# this function returns a dict, with the different animal states as keys
-# usually, we only expect and use the states "sleep" and "run"
-# the dict shows us, on which days and in which epochs the animal was in a specific state
-
+# loads task files for each day.
+# sorts each epoch into dict, according to state. Looks like:
+# {state: {day: [list of epochs]}}
+# states are usually "run" and "sleep"
 taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
-# the two tasks above were general for all combinations
 
 
+# the two functions above were general for all combinations
 # now, we loop through all areas that interest us.
 for area in area_list:
 
     # dict looks like:
     # {state: {day: {epoch: [list of neuron keys]}}}
     # states are "wake" and "sleep"
-    state_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
-
+    neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
+    spikes = tools.load_spikes(neuron_dict, animal)
 
 
 # %%
