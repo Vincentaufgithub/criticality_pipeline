@@ -2,8 +2,9 @@ from scipy.io import loadmat
 import loren_frank_data_processing.neurons as lf_neurons 
 import pandas as pd
 from glob import glob
-import utilities.load_recording_information as rec_info
 
+import utilities.load_recording_information as rec_info
+import utilities.load_spiking_times as spikes
 
 
 def create_sorted_dict_with_cellinfos(animal):
@@ -139,3 +140,21 @@ def create_neuron_dicts_for_each_state(cellinfo_df, taskinfo_dict):
                 "sleep": dict_list[1]}
     
     return state_day_epoch_neuron_dict
+
+
+
+def load_spikes(neuron_dict, animal):
+    spikes.do_the_thing(neuron_dict, animal)
+    return 
+
+
+
+
+
+
+
+
+
+
+
+
