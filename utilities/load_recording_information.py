@@ -112,3 +112,54 @@ def add_neuron_keys_to_state_dict(get_epochs_per_day_dict, neuron_id_list):
 
 
 
+
+
+
+
+
+
+####################################################################
+# Functions I'm not using 
+# But keeping them here just in case
+####################################################################
+
+
+
+
+# this one would be called in tools.create_neuron_dicts_for_each_state
+# and is supposed to combine the state dicts combining neuron_keys for each day and epoch
+# However, it checks for every neuron key if it also exists in the other dict
+# and if so, the neuron key will be added to neither dict
+# not using this for two reasons:
+# 1. looping costs time and so far, it never detected any overlaps
+# 2. if any overlaps should exist, that would mean that something is wrong with the way we generate the neuron_keys
+# and this wouldn't be the rifht place to fix it.
+def conjoined_dict_with_overlap_checked(wake_day_epoch_dict, sleep_day_epoch_dict):
+    '''Input: wake_day_epoch_dict, sleep_day_epoch_dict -- Behav State specific (relative to epoch categorization) day epoch combinations'
+    Returns: embedded dict with outher keys behav state, inner keys day, and double inner keys epoch, with overlapping combinations deleted'
+    '''
+    final_dict = {'wake': {}, 'sleep': {}}
+    overlap_counter = 0
+    
+    for i in wake_day_epoch_dict.keys():
+        for j in wake_day_epoch_dict[i].keys():
+            if i in sleep_day_epoch_dict and j in sleep_day_epoch_dict[i]:
+                if wake_day_epoch_dict[i][j] == sleep_day_epoch_dict[i][j]:
+                    overlap_counter += 1
+            else:
+                final_dict['wake'].setdefault(i, {})[j] = wake_day_epoch_dict[i][j]
+    
+    for i in sleep_day_epoch_dict.keys():
+        for j in sleep_day_epoch_dict[i].keys():
+            if i in wake_day_epoch_dict and j in wake_day_epoch_dict[i]:
+                if wake_day_epoch_dict[i][j] == sleep_day_epoch_dict[i][j]:
+                    overlap_counter += 1
+            else:
+                final_dict['sleep'].setdefault(i, {})[j] = sleep_day_epoch_dict[i][j]
+    
+    #print("overlap counter:", overlap_counter)
+                
+    return final_dict 
+
+
+
