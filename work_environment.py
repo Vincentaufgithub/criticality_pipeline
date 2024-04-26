@@ -1,6 +1,6 @@
 # %%
 
-#import pynapple as nap
+import pynapple as nap
 #import mrestimator as mre
 
 from collections import namedtuple
@@ -42,7 +42,7 @@ animals_dict = {
 # so far, we'll only do one animal at once
 # if we want, we can later iterate over a list of animals, but I would add this at the very end
 animal = animals_dict["fra"]
-area_list = ["CA1", "CA3"]
+area_list = ["CA1"]
 
 # loads the cellinfo file for given animal and sorts information according to recording area. Creates unique neuron keys.
 # print(cellinfo_dict_sorted_by_area.keys()) # shows all the areas that were recorded in given animal
@@ -54,7 +54,8 @@ cellinfo_dict_sorted_by_area = tools.create_sorted_dict_with_cellinfos(animal)
 # states are usually "run" and "sleep"
 taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
 
-
+'''
+spikes_dict = {}
 # the two functions above were general for all combinations
 # now, we loop through all areas that interest us.
 for area in area_list:
@@ -64,6 +65,26 @@ for area in area_list:
     # states are "wake" and "sleep"
     neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
     spikes = tools.load_spikes(neuron_dict, animal)
+    spikes_dict[area] = spikes
+'''
+
+neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[("CA1",)], taskinfo_dict_sorted_by_state)
+spikes = tools.load_spikes(neuron_dict, animal)
+
+# print(spikes["wake"][4][4])
+
+# this is great. Now we need to sum up all the neuron activity for each epoch. Then slice it. Then run mr.estimator. Then we should be finished.
+
+# %%
+
+epoch_ts_group = spikes["wake"][4][2]
+
+print(epoch_ts_group)
+print(type(epoch_ts_group))
+count = epoch_ts_group.count(bin_size = 5, time_units = "ms")
+
+print(count)
+# IT WORKS!!!!
 
 
 # %%
