@@ -144,8 +144,7 @@ def create_neuron_dicts_for_each_state(cellinfo_df, taskinfo_dict):
 
 
 def load_spikes(neuron_dict, animal):
-    spikes.do_the_thing(neuron_dict, animal)
-    return 
+    return spikes.load_and_bin_spike_data(neuron_dict, animal)
 
 
 
