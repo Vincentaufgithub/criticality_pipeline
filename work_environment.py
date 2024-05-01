@@ -1,7 +1,7 @@
 # %%
 
 import pynapple as nap
-#import mrestimator as mre
+import mrestimator as mre
 
 from collections import namedtuple
 from scipy.io import loadmat
@@ -71,20 +71,45 @@ for area in area_list:
 neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[("CA1",)], taskinfo_dict_sorted_by_state)
 spikes = tools.load_spikes(neuron_dict, animal)
 
-# print(spikes["wake"][4][4])
+'''
+for state in spikes.keys():
+    
+    for day in spikes[state].keys():
+    
+        for epoch in spikes[state][day].keys():
+            print(spikes[state][day][epoch])
+   
+'''
+      
+#print(spikes["wake"][4][4])
 
 # this is great. Now we need to sum up all the neuron activity for each epoch. Then slice it. Then run mr.estimator. Then we should be finished.
 
-# %%
+
 
 epoch_ts_group = spikes["wake"][4][2]
 
-print(epoch_ts_group)
-print(type(epoch_ts_group))
-count = epoch_ts_group.count(bin_size = 5, time_units = "ms")
 
-print(count)
-# IT WORKS!!!!
+
+# %%
+
+
+overall_activity = np.sum(epoch_ts_group.values, axis=1)
+
+
+coefficients = mre.coefficients(overall_activity, dt=5, dtunit='ms', method = 'ts')
+output_handler = mre.fit(coefficients.coefficients, fitfunc='f_complex')
+
+       
+plt.plot(coefficients.steps, coefficients.coefficients, label='data')
+        
+plt.plot(coefficients.steps, mre.f_complex(coefficients.steps, *output_handler.popt),
+            label='complex m={:.5f}'.format(output_handler.mre))
+
+plt.legend()
+plt.savefig("/home/dekorvyb/trash/graphic.png")
+print("saved succesfully")
+# - Hoorray! It finally looks the way we want to
 
 
 # %%
