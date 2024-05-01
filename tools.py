@@ -2,6 +2,7 @@ from scipy.io import loadmat
 import loren_frank_data_processing.neurons as lf_neurons 
 import pandas as pd
 from glob import glob
+import numpy as np
 
 import utilities.load_recording_information as rec_info
 import utilities.load_spiking_times as spikes
@@ -144,7 +145,23 @@ def create_neuron_dicts_for_each_state(cellinfo_df, taskinfo_dict):
 
 
 def load_spikes(neuron_dict, animal):
-    return spikes.load_and_bin_spike_data(neuron_dict, animal)
+    
+
+    for state_index in neuron_dict:
+        for day_index in neuron_dict[state_index]:
+            for epoch_index in neuron_dict[state_index][day_index]:
+                
+                grouped_time_series = spikes.grouped_time_series(neuron_dict[state_index][day_index][epoch_index], animal)
+                
+                binned_ts_group = grouped_time_series.count(bin_size = 5, time_units = "ms")
+                summed_activity = np.sum(binned_ts_group.values, axis=1)
+                
+                neuron_dict[state_index][day_index][epoch_index] = summed_activity
+    
+    
+    
+    return neuron_dict
+    # return spikes.load_and_bin_spike_data(neuron_dict, animal)
 
 
 
