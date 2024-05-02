@@ -12,8 +12,7 @@ import matplotlib.pyplot as plt
 import tools
 
 
-#Creating dictionary with animal file paths
-#to efficiently switch between animals and fetch the names of existing files
+# Creating dictionary with animal file paths
 # Defining each animal via its short name and its directory
 Animal = namedtuple('Animal', {'short_name', 'directory'})
 
@@ -22,15 +21,16 @@ animals_dict = {
            'gov' : Animal(short_name = 'gov', directory = '/local2/Jan/Government/Government/'),
            'egy' : Animal(short_name = 'egy', directory = '/local2/Jan/Egypt/Egypt/'), 
            'remy': Animal(short_name = 'remy', directory = '/local2/Jan/Remy/Remy/'),
-           #"Fiv" : Animal(short_name = "Fiv", directory = "/home/dekorvyb/Downloads/Fiv"),
            "bon" : Animal(short_name = "bon", directory = "/home/dekorvyb/Downloads/Bon/"),
             "Cor" : Animal(short_name = "Cor", directory = "/home/dekorvyb/Downloads/Corriander/"),
             "con" : Animal(short_name = "con", directory = "/home/dekorvyb/Downloads/Con/"),
+            "cha" : Animal(short_name = "cha", directory = "/home/dekorvyb/Downloads/Chapati/"),
+            "dav" : Animal(short_name = "dav", directory = "/home/dekorvyb/Downloads/Dave/"),
+            
+            #"Fiv" : Animal(short_name = "Fiv", directory = "/home/dekorvyb/Downloads/Fiv"),
             #"ten" : Animal(short_name = "ten", directory = "/home/dekorvyb/Downloads/Ten/"),
             #"dud" : Animal(short_name = "dud", directory = "/home/dekorvyb/Downloads/Dudley/"),
-            "cha" : Animal(short_name = "cha", directory = "/home/dekorvyb/Downloads/Chapati/"),
-            #"Eig" : Animal(short_name = "Eig", directory = "/home/dekorvyb/Downloads/Eig/"),
-            "dav" : Animal(short_name = "dav", directory = "/home/dekorvyb/Downloads/Dave/")
+            #"Eig" : Animal(short_name = "Eig", directory = "/home/dekorvyb/Downloads/Eig/")
             }
 
 
@@ -38,48 +38,28 @@ animals_dict = {
 # so we would get an overview of all the areas that were recorded for each animal.
 
 
-# define animal we want to look at
-# so far, we'll only do one animal at once
+# define animals and areas of interest
 # if we want, we can later iterate over a list of animals, but I would add this at the very end
 animal = animals_dict["fra"]
 area_list = ["CA1"]
 
-# loads the cellinfo file for given animal and sorts information according to recording area. Creates unique neuron keys.
+
 # print(cellinfo_dict_sorted_by_area.keys()) # shows all the areas that were recorded in given animal
 cellinfo_dict_sorted_by_area = tools.create_sorted_dict_with_cellinfos(animal)
 
-# loads task files for each day.
-# sorts each epoch into dict, according to state. Looks like:
-# {state: {day: [list of epochs]}}
-# states are usually "run" and "sleep"
 taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
 
-'''
-spikes_dict = {}
-# the two functions above were general for all combinations
-# now, we loop through all areas that interest us.
-for area in area_list:
 
-    # dict looks like:
-    # {state: {day: {epoch: [list of neuron keys]}}}
-    # states are "wake" and "sleep"
+for area in area_list:
     neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
     spikes = tools.load_spikes(neuron_dict, animal)
-    spikes_dict[area] = spikes
-'''
-
-neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[("CA1",)], taskinfo_dict_sorted_by_state)
-spikes = tools.load_spikes(neuron_dict, animal)
-
-'''
-for state in spikes.keys():
     
-    for day in spikes[state].keys():
+    tools.run_mr_estimator_on_summed_activity()
     
-        for epoch in spikes[state][day].keys():
-            print(spikes[state][day][epoch])
-   
-'''
+    # in the code above, we converted the dataset with its specific structure into the desired format
+    # the goal is to get to the same format with other datasets too, so the rest of the code will work universally
+
+# %%
       
 #print(spikes["wake"][4][4])
 
