@@ -49,10 +49,13 @@ def load_task_file(file_name, animal):
     return df
 
 
+
+
 def match_neuron_key_to_state(dataframe, multiindex):
     
     # bc first element in each index is the animal name
     valid_entries = [row_index[1:] for row_index in multiindex]
+    
     df_entries = [(row_index[2],row_index[4]) for row_index in dataframe.index]
     
     matching_entries = [entry for entry in valid_entries if entry in df_entries]
@@ -63,6 +66,8 @@ def match_neuron_key_to_state(dataframe, multiindex):
         filtered_dataframe = pd.concat([filtered_dataframe, temp_dataframe])
 
     return filtered_dataframe
+
+
 
 
 def get_epochs_by_day(multi_index):

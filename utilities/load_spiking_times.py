@@ -10,26 +10,21 @@ def grouped_time_series(epoch_neuron_keys, animal):
                 
     for neuron_key_index, neuron_key_str in enumerate(epoch_neuron_keys):
                     # we are now inside a list of neuron key. I would prefer a dict structure
- 
-        if type(neuron_key_str) == str:
-                        
-                        # unpack the neuron key from string to tuple
+        try:
+            # unpack the neuron key from string to tuple
             animal_short_name, day_number, epoch_number, tetrode_number, neuron_number = neuron_key_str.split("_")
-            neuron_key = (animal_short_name, int(day_number), int(epoch_number), int(tetrode_number), int(neuron_number))
-                        
-                        # if possible, replace neuron_key with time series
-                        ## spike_time_array = None
-            try:
-                            ## spike_time_array = spike_time_index_association(neuron_key, animal)
+            neuron_key = (animal_short_name, int(day_number), int(epoch_number), int(tetrode_number), int(neuron_number))  
+                
+                          
+            epoch_dict[neuron_key_index] = spike_time_index_association(neuron_key, animal) # experimental
                             
-                epoch_dict[neuron_key_index] = spike_time_index_association(neuron_key, animal) # experimental
-                            
-            except:
-                print("failed to load", neuron_key)
+        except Exception as e:
+            print(e, neuron_key)
                         
-                        ## neuron_dict[state_index][day_index][epoch_index][neuron_key_index] = spike_time_array 
+            ## neuron_dict[state_index][day_index][epoch_index][neuron_key_index] = spike_time_array 
 
-                # create time Series group for each epoch
+            # create time Series group for each epoch
+    
     time_series = nap.TsGroup(epoch_dict)
     return time_series
 
@@ -111,15 +106,17 @@ def get_spikes_series(neuron_key, animal):
     neuron_file = []
     spike_time = []
 
-    try:
-        neuron_file = loadmat(filename)
-        spike_time = neuron_file['spikes'][0, -1][0, epoch - 1][0, tetrode_number - 1][0, neuron_number - 1][0]['data'][0][:, 0]
-        ts = nap.Ts(t=spike_time, time_units= "s")
+    neuron_file = loadmat(filename)
     
-    except (FileNotFoundError, TypeError, IndexError):
-        spike_time = []
-
-
+    
+    if not neuron_file['spikes'][0, -1][0, epoch - 1][0, tetrode_number - 1][0, neuron_number - 1][0]['data'][0].any():
+        raise Exception("No spiking times")
+    
+    
+    spike_time = neuron_file['spikes'][0, -1][0, epoch - 1][0, tetrode_number - 1][0, neuron_number - 1][0]['data'][0][:, 0]
+    ts = nap.Ts(t=spike_time, time_units= "s")
+   
+    
     return ts
 
 
