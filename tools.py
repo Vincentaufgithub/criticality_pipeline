@@ -1,11 +1,14 @@
-from scipy.io import loadmat
-import loren_frank_data_processing.neurons as lf_neurons 
 import pandas as pd
-from glob import glob
 import numpy as np
+from glob import glob
+from scipy.io import loadmat
+
+import loren_frank_data_processing.neurons as lf_neurons 
 
 import utilities.load_recording_information as rec_info
 import utilities.load_spiking_times as spikes
+
+
 
 
 def create_sorted_dict_with_cellinfos(animal):
@@ -30,13 +33,12 @@ def create_sorted_dict_with_cellinfos(animal):
     
     '''
     
-    # load the cellinfo file of the animal
     cellinfo_filename = f"{animal.directory}{animal.short_name}cellinfo.mat"
     neuron_cellinfo = loadmat(cellinfo_filename)
     
     
     # using loren frank lab, we create a dataframe containing all neuron info for a given animal
-    # the function from loren frank lab also creates a unique neuron key for each recorded unit - pretty cool!
+    # also creates a unique neuron key for each recorded unit - pretty cool!
     neuron_info_dataframe = pd.concat([
         lf_neurons.convert_neuron_epoch_to_dataframe(epoch, animal.short_name, day_ind + 1, epoch_ind + 1)
         for day_ind, day in enumerate(neuron_cellinfo['cellinfo'].T)
@@ -70,8 +72,11 @@ def create_sorted_dict_with_tasks(animal):
     returns:
     
     task_files_dict_sorted : dictionary
-        keys: ("area",)           - don't know why the weird format, I'll try fixing that
-        contains all days and epochs where the animal was in specified state
+        sorts all epochs according to the state the animal was in
+        format: {state: {day: [list of epochs]}}
+        
+        states are usually "run" and "sleep"
+        sometimes, we'll get something like sleep_failed - ignoring that so far
     
     '''
     # find the names of all task files
@@ -87,6 +92,7 @@ def create_sorted_dict_with_tasks(animal):
     # print(task_files_dict_sorted.keys())
     
     return task_files_dict_sorted
+
 
 
 
@@ -114,7 +120,7 @@ def create_neuron_dicts_for_each_state(cellinfo_df, taskinfo_dict):
                     [list of neuron_keys]
         }}}
         
-    (state will either be "wake" or "sleep".)
+        (state will either be "wake" or "sleep".)
     
     '''
     # in this list, we'll store the df for wake and sleep state
@@ -144,8 +150,48 @@ def create_neuron_dicts_for_each_state(cellinfo_df, taskinfo_dict):
 
 
 
-def load_spikes(neuron_dict, animal):
+
+
+def load_spikes(neuron_dict, animal, bin_size = 5):
+    '''
+    given a dict with neuron_keys, this function will load all the spiking times of one epoch into a grouped pynapple time series.
+    It will then bin the data and finally sum up the bins of all neurons.
+    Returns a dict with the same structure as the input.
+    ---------------------
+    parameters
     
+    
+    neuron_dict : dictionary
+        a nested dictionary specific to animal, and recording area.
+        With the following structure:
+        (state will either be "wake" or "sleep".)
+        
+            {state:
+                {day:
+                    {epoch:
+                        [list of neuron_keys]
+            }}}
+        
+    
+    animal : named tuple
+        containing 'short_name' and 'filepath' to animal folder
+    
+    
+    bin_size : int
+        optional
+        size to bin spiking series in, in ms
+    
+    ------------------
+    returns
+    
+    
+    neuron_dict : dictionary
+        Same dict structure as input dict.
+        However, neuron_dict[state][day][epoch] will give a one-dimensional np.ndarray of the summed activity.
+        Each item being the total number of recorded spikes in the corresponding bin.
+        The length of each np.ndarray will be:
+            (last_recorded_spike_in_epoch_in_ms - first_recorded_spike_in_epoch_in_ms) / bin_size
+    '''
 
     for state_index in neuron_dict:
         for day_index in neuron_dict[state_index]:
@@ -153,12 +199,10 @@ def load_spikes(neuron_dict, animal):
                 
                 grouped_time_series = spikes.grouped_time_series(neuron_dict[state_index][day_index][epoch_index], animal)
                 
-                binned_ts_group = grouped_time_series.count(bin_size = 5, time_units = "ms")
+                binned_ts_group = grouped_time_series.count(bin_size = bin_size, time_units = "ms")
                 summed_activity = np.sum(binned_ts_group.values, axis=1)
                 
                 neuron_dict[state_index][day_index][epoch_index] = summed_activity
-    
-    
     
     return neuron_dict
     # return spikes.load_and_bin_spike_data(neuron_dict, animal)
@@ -167,6 +211,13 @@ def load_spikes(neuron_dict, animal):
 
 
 
+def run_mr_estimator_on_summed_activity():
+    # here, we'll iterate over activity array
+    # ... using np.array_split()
+    
+    
+    # after sclicing it, we can already run the estimator
+    return
 
 
 
