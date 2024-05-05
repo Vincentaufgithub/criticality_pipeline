@@ -211,10 +211,22 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
 
 
 
-def run_mr_estimator_on_summed_activity():
+def run_mr_estimator_on_summed_activity(neuron_dict, bin_size, window_size):
     # here, we'll iterate over activity array
     # ... using np.array_split()
     
+    # number of elements in each slice
+    slice_size = (window_size * 1000) / bin_size
+    
+    for state_index in neuron_dict:
+        for day_index in neuron_dict[state_index]:
+            for epoch_index in neuron_dict[state_index][day_index]:
+                slices = np.array_split(neuron_dict[state_index][day_index][epoch_index], slice_size)
+                
+                # delete last element if it is smaller than the other ones
+                # haven't found a more elegent solution yet
+                if len(slices[-1]) < slice_size:
+                    slices = slices[:-1] 
     
     # after sclicing it, we can already run the estimator
     return
