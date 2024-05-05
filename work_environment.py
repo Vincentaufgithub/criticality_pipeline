@@ -42,6 +42,8 @@ animals_dict = {
 # if we want, we can later iterate over a list of animals, but I would add this at the very end
 animal = animals_dict["fra"]
 area_list = ["CA1"]
+bin_size = 5 # in ms
+window_size = 90 # in seconds
 
 
 # print(cellinfo_dict_sorted_by_area.keys()) # shows all the areas that were recorded in given animal
@@ -52,9 +54,9 @@ taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
 
 for area in area_list:
     neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
-    spikes = tools.load_spikes(neuron_dict, animal)
+    spikes = tools.load_spikes(neuron_dict, animal, bin_size = bin_size)
     
-    tools.run_mr_estimator_on_summed_activity()
+    results = tools.run_mr_estimator_on_summed_activity(spikes, bin_size, window_size)
     
     # in the code above, we converted the dataset with its specific structure into the desired format
     # the goal is to get to the same format with other datasets too, so the rest of the code will work universally
