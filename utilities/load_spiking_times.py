@@ -2,82 +2,34 @@ import numpy as np
 from scipy.io import loadmat
 import pynapple as nap
 from collections import namedtuple
+import pandas as pd
 
 
 
 def grouped_time_series(epoch_neuron_keys, animal):
-    epoch_dict = {} # experimental
+    epoch_dict = {}
                 
     for neuron_key_index, neuron_key_str in enumerate(epoch_neuron_keys):
-                    # we are now inside a list of neuron key. I would prefer a dict structure
         try:
             # unpack the neuron key from string to tuple
             animal_short_name, day_number, epoch_number, tetrode_number, neuron_number = neuron_key_str.split("_")
             neuron_key = (animal_short_name, int(day_number), int(epoch_number), int(tetrode_number), int(neuron_number))  
                 
                           
-            epoch_dict[neuron_key_index] = spike_time_index_association(neuron_key, animal) # experimental
-                            
+            epoch_dict[neuron_key_index] = get_spikes_series(neuron_key, animal) # experimental
+            time_series = nap.TsGroup(epoch_dict)
+            
+                    
         except Exception as e:
             print(e, neuron_key)
+
                         
             ## neuron_dict[state_index][day_index][epoch_index][neuron_key_index] = spike_time_array 
 
             # create time Series group for each epoch
-    
-    time_series = nap.TsGroup(epoch_dict)
     return time_series
 
 
-
-
-
-# by using pynapple, we'll now definitely derive from Jans original code
-# I just want to try leaving the time series the way they are. And seeing if we can get any results already
-# finetuning can be done later
-def spike_time_index_association(neuron_key, animal):
-    ''' Calls get_trial_time for reference of dataframe size.
-    Fits recorded data of neuron into the time bins.
-    Parameters
-    --------
-    neuron_key : tuple
-        key for specific neuron
-    animals : dict
-        file paths to all animal directories
-    time_function : function
-        optional
-        by default get_trial_time
-        determine size of dataframe (total recording time, recording frequency, ...)
-    returns
-    ---------
-    spikes_df : dataframe
-        number of spikes summed up for each time bin (-> activity)
-    '''
-    #print("neuron_key:", neuron_key)
-    #time = time_function(neuron_key[:3], animal)
-    #print("sdd: creating spikes_df")
-    
-    
-    spikes_df = get_spikes_series(neuron_key, animal)
-    return spikes_df
-    
-
-    
-    '''
-    time_index = None
-    
-    try:
-        time_index = np.digitize(spikes_df.index.total_seconds(),
-                             time.total_seconds())
- 
-        time_index[time_index >= len(time)] = len(time) -1
-        return (spikes_df.groupby(time[time_index]).sum().reindex(index=time, fill_value=0))
-    
-    except AttributeError: 
-        print('No spikes here; data is emtpy')
-        return None
-    '''
-    
 
 # this an attempt to load the spiking data into pynapple instead of pandas Time Series
 # the original function can be found below
@@ -114,10 +66,30 @@ def get_spikes_series(neuron_key, animal):
     
     
     spike_time = neuron_file['spikes'][0, -1][0, epoch - 1][0, tetrode_number - 1][0, neuron_number - 1][0]['data'][0][:, 0]
-    ts = nap.Ts(t=spike_time, time_units= "s")
-   
-    
+    ts = nap.Ts(t = spike_time, time_units= "s")
+    #print(ts)
+
+
     return ts
+
+
+
+
+def activity_series_to_time_chunks(summed_epoch_activity, slice_size):
+    chunk_list = []
+                
+    for i in range(0, len(summed_epoch_activity), slice_size):
+        chunk_list.append(summed_epoch_activity[i:(i+slice_size)])
+                
+                
+        # delete last element if it is smaller than the other ones
+        # haven't found a more elegent solution yet
+        if len(chunk_list[-1]) < slice_size:
+            chunk_list = chunk_list[:-1] 
+
+    return chunk_list
+
+
 
 
 
