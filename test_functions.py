@@ -37,9 +37,64 @@ spike_time = neuron_file['spikes'][0, -1][0, epoch - 1][0, tetrode_number - 1][0
 ts = nap.Ts(t=spike_time, time_units= "s")
 
 
+# %%
+import mrestimator as mre
+
+bp = mre.simulate_branching(m=0.995, a=10, numtrials=15)
+
+print(bp)
+
+# %%
+
+
+import pickle
+import glob
+import pandas as pd
+
+
+def help_func(string):
+    return int(string[-9])
 
 
 
+former_filenames = glob.glob("/local2/Vincent/ts_90s/_fra_CA1_wake_4_2_*")
+former_filenames.sort(key = help_func)
+print(former_filenames)
+
+former_values = []
+for element in former_filenames:
+    former_values.append(pd.read_parquet(element))
+    
 
 
+new_filenames = glob.glob("/home/dekorvyb/trash/fra_CA1_wake_04_02_*.parquet")
+new_filenames.sort(key = help_func)
+print(new_filenames)
 
+
+new_values = []
+for element in new_filenames:
+    new_values.append(pd.read_parquet(element))
+
+'''
+for i in range(len(former_values)): 
+    print("######################################")
+    print("######################################")
+    print("FORMER")
+    print(former_values[i])
+    print("######################################")
+    print("NEW")
+    print(new_values[i])'''
+
+# %%
+
+
+import pynapple as nap
+import numpy as np
+
+ts = nap.Ts(t=np.sort(np.random.uniform(9000, 10000, 30)), time_units="s")
+
+
+print(ts)
+
+# %%
