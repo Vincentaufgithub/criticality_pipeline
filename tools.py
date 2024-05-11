@@ -193,18 +193,40 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
             (last_recorded_spike_in_epoch_in_ms - first_recorded_spike_in_epoch_in_ms) / bin_size
     '''
 
+    return_dict = neuron_dict.copy()
+    
     for state_index in neuron_dict:
         for day_index in neuron_dict[state_index]:
             for epoch_index in neuron_dict[state_index][day_index]:
                 
+
                 grouped_time_series = spikes.grouped_time_series(neuron_dict[state_index][day_index][epoch_index], animal)
                 
-                binned_ts_group = grouped_time_series.count(bin_size = bin_size, time_units = "ms")
-                summed_activity = np.sum(binned_ts_group.values, axis=1)
+                if np.any(grouped_time_series):
                 
-                neuron_dict[state_index][day_index][epoch_index] = summed_activity
+                    #with np.printoptions(threshold=np.inf):
+                     #   for i in range(len(grouped_time_series)):
+                      #      print(grouped_time_series[i])
+                    
+                    binned_ts_group = grouped_time_series.count(bin_size = bin_size, time_units = "ms")
+                    
+                    #with np.printoptions(threshold=np.inf):
+                     #  print(binned_ts_group)
+                        
+                        
+                    summed_activity = np.sum(binned_ts_group.values, axis=1)
+                    
+                    '''
+                    with np.printoptions(threshold=np.inf):
+                       print(summed_activity)'''
+
+                    
+                    return_dict[state_index][day_index][epoch_index] = summed_activity
+                
+                else:
+                    del return_dict[state_index][day_index][epoch_index]
     
-    return neuron_dict
+    return return_dict
     # return spikes.load_and_bin_spike_data(neuron_dict, animal)
 
 
@@ -216,20 +238,26 @@ def run_mr_estimator_on_summed_activity(neuron_dict, bin_size, window_size):
     # ... using np.array_split()
     
     # number of elements in each slice
-    slice_size = (window_size * 1000) / bin_size
+    slice_size = int((window_size * 1000) / bin_size)
     
     for state_index in neuron_dict:
         for day_index in neuron_dict[state_index]:
             for epoch_index in neuron_dict[state_index][day_index]:
-                slices = np.array_split(neuron_dict[state_index][day_index][epoch_index], slice_size)
                 
-                # delete last element if it is smaller than the other ones
-                # haven't found a more elegent solution yet
-                if len(slices[-1]) < slice_size:
-                    slices = slices[:-1] 
-    
+                time_chunks = spikes.activity_series_to_time_chunks(
+                    neuron_dict[state_index][day_index][epoch_index],
+                    slice_size)
+
+                
+                neuron_dict[state_index][day_index][epoch_index] = time_chunks
+                
+                
+               
+                    
+
+            
     # after sclicing it, we can already run the estimator
-    return
+    return neuron_dict
 
 
 
