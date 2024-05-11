@@ -8,6 +8,7 @@ from scipy.io import loadmat
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import pickle
 
 import tools
 
@@ -56,7 +57,11 @@ for area in area_list:
     neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
     spikes = tools.load_spikes(neuron_dict, animal, bin_size = bin_size)
     
+    # %%
+    #print(len(spikes["wake"][4][2][0]))
+    
     results = tools.run_mr_estimator_on_summed_activity(spikes, bin_size, window_size)
+    
     
     # in the code above, we converted the dataset with its specific structure into the desired format
     # the goal is to get to the same format with other datasets too, so the rest of the code will work universally
@@ -69,7 +74,54 @@ for area in area_list:
 
 
 
+# %%
+
 epoch_ts_group = spikes["wake"][4][2]
+
+for i in range(len(epoch_ts_group)):
+    
+    # plt.clf()
+    
+    overall_activity = epoch_ts_group[i]
+    print(overall_activity)
+    
+    coefficients = mre.coefficients(overall_activity, dtunit='ms', dt = 5, method = 'ts')    
+    
+    output_handler = mre.fit(coefficients.coefficients, fitfunc='f_complex')
+    
+    data_to_store = {
+            'popt': output_handler.popt,
+            'ssres': output_handler.ssres,
+            'pcov': [],
+            'steps': output_handler.steps,
+            'dt': output_handler.dt,
+            'dtunit': output_handler.dtunit,
+            'quantiles': output_handler.quantiles,
+            'mrequantiles': output_handler.mrequantiles,
+            'tauquantiles': output_handler.tauquantiles,
+            'description': output_handler.description,
+            'tau': output_handler.tau,
+            'branching_factor': output_handler.mre,
+        }
+
+    
+    data_to_store = pd.DataFrame([data_to_store])
+    data_to_store.to_parquet(f"/home/dekorvyb/trash/{animal.short_name}_CA1_wake_04_02_{i}.parquet", index = True)
+    
+    
+    '''
+
+        
+    plt.plot(coefficients.steps, coefficients.coefficients, label='data')
+            
+    plt.plot(coefficients.steps, mre.f_complex(coefficients.steps, *output_handler.popt),
+                label='complex m={:.5f}'.format(output_handler.mre))
+
+    plt.legend()
+    plt.savefig(f"/home/dekorvyb/trash/graphic{i}.png")
+    '''
+
+
 
 
 
@@ -79,7 +131,7 @@ epoch_ts_group = spikes["wake"][4][2]
 overall_activity = np.sum(epoch_ts_group.values, axis=1)
 
 
-coefficients = mre.coefficients(overall_activity, dt=5, dtunit='ms', method = 'ts')
+coefficients = mre.coefficients(overall_activity, dtunit='steps', method = 'ts')
 output_handler = mre.fit(coefficients.coefficients, fitfunc='f_complex')
 
        
