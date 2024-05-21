@@ -66,7 +66,7 @@ for element in former_filenames:
     former_values.append(pd.read_parquet(element))
     
 
-
+ 
 new_filenames = glob.glob("/home/dekorvyb/trash/fra_CA1_wake_04_02_*.parquet")
 new_filenames.sort(key = help_func)
 print(new_filenames)
@@ -76,7 +76,7 @@ new_values = []
 for element in new_filenames:
     new_values.append(pd.read_parquet(element))
 
-'''
+
 for i in range(len(former_values)): 
     print("######################################")
     print("######################################")
@@ -84,7 +84,7 @@ for i in range(len(former_values)):
     print(former_values[i])
     print("######################################")
     print("NEW")
-    print(new_values[i])'''
+    print(new_values[i])
 
 # %%
 
