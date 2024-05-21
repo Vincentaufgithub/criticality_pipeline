@@ -17,8 +17,8 @@ def grouped_time_series(epoch_neuron_keys, animal):
                 
                           
             epoch_dict[neuron_key_index] = get_spikes_series(neuron_key, animal) # experimental
-            time_series = nap.TsGroup(epoch_dict)
-            
+            #time_series = nap.TsGroup(epoch_dict)
+
                     
         except Exception as e:
             print(e, neuron_key)
@@ -27,7 +27,13 @@ def grouped_time_series(epoch_neuron_keys, animal):
             ## neuron_dict[state_index][day_index][epoch_index][neuron_key_index] = spike_time_array 
 
             # create time Series group for each epoch
-    return time_series
+    if not epoch_dict:
+        return None
+    
+    
+    sorted_epoch_dict = {i: epoch_dict[key] for i, key in enumerate(epoch_dict)}
+    
+    return nap.TsGroup(sorted_epoch_dict)
 
 
 
@@ -67,7 +73,6 @@ def get_spikes_series(neuron_key, animal):
     
     spike_time = neuron_file['spikes'][0, -1][0, epoch - 1][0, tetrode_number - 1][0, neuron_number - 1][0]['data'][0][:, 0]
     ts = nap.Ts(t = spike_time, time_units= "s")
-    #print(ts)
 
 
     return ts
