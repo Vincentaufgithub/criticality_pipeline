@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 from glob import glob
 from scipy.io import loadmat
+from math import ceil
 
 import loren_frank_data_processing.neurons as lf_neurons 
+import pynapple as nap
 
 import utilities.load_recording_information as rec_info
 import utilities.load_spiking_times as spikes
@@ -201,30 +203,47 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
                 
 
                 grouped_time_series = spikes.grouped_time_series(neuron_dict[state_index][day_index][epoch_index], animal)
+        
                 
                 if np.any(grouped_time_series):
+                    
                 
                     #with np.printoptions(threshold=np.inf):
                      #   for i in range(len(grouped_time_series)):
                       #      print(grouped_time_series[i])
+
+
+                    # count() sometimes cuts off values, so we first have to define an epoch
+                    # where the starting time will be the first recorded spike and the end time the last recorded spike
+
+                    first_spikes = [grouped_time_series[i].start_time() for i in range(len(grouped_time_series))]
+                    last_spikes = [grouped_time_series[i].end_time() for i in range(len(grouped_time_series))]
                     
-                    binned_ts_group = grouped_time_series.count(bin_size = bin_size, time_units = "ms")
+                    # creating an epoch with first and last recorded spike time
+                    # I rounded up the last spiking thime to the next highest number, making sure it still gets included
+                    epoch = nap.IntervalSet(start = min(first_spikes), end = float(ceil(max(last_spikes))), time_units='s')
                     
-                    #with np.printoptions(threshold=np.inf):
-                     #  print(binned_ts_group)
+                    
+                    binned_ts_group = grouped_time_series.count(bin_size = bin_size, time_units = "ms", ep = epoch)
+                    
+                    with np.printoptions(threshold=np.inf):
+                       print(binned_ts_group)
                         
                         
                     summed_activity = np.sum(binned_ts_group.values, axis=1)
+
                     
-                    '''
+                    
                     with np.printoptions(threshold=np.inf):
-                       print(summed_activity)'''
+                       print(summed_activity)
 
                     
                     return_dict[state_index][day_index][epoch_index] = summed_activity
                 
                 else:
-                    del return_dict[state_index][day_index][epoch_index]
+                    print(f"no spiking data for: {state_index}, day {day_index}, epoch {epoch_index}")
+                    return_dict[state_index][day_index][epoch_index] = None
+
     
     return return_dict
     # return spikes.load_and_bin_spike_data(neuron_dict, animal)
@@ -244,9 +263,10 @@ def run_mr_estimator_on_summed_activity(neuron_dict, bin_size, window_size):
         for day_index in neuron_dict[state_index]:
             for epoch_index in neuron_dict[state_index][day_index]:
                 
-                time_chunks = spikes.activity_series_to_time_chunks(
-                    neuron_dict[state_index][day_index][epoch_index],
-                    slice_size)
+                if np.any(neuron_dict[state_index][day_index][epoch_index]):
+                    time_chunks = spikes.activity_series_to_time_chunks(
+                        neuron_dict[state_index][day_index][epoch_index],
+                        slice_size)
 
                 
                 neuron_dict[state_index][day_index][epoch_index] = time_chunks
