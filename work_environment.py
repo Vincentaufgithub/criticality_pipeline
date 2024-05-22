@@ -1,72 +1,149 @@
 # %%
 
-#import pynapple as nap
+import pynapple as nap
+import mrestimator as mre
+
 from collections import namedtuple
 from scipy.io import loadmat
 import numpy as np
 import pandas as pd
-import mrestimator as mre
 import matplotlib.pyplot as plt
+import pickle
 
 import tools
-# %%
 
 
-### Creating dictionary with animal file paths
-### to efficiently switch between animals and fetch the names of existing files
-# ### Defining each animal via its short name and its directory
+# Creating dictionary with animal file paths
+# Defining each animal via its short name and its directory
 Animal = namedtuple('Animal', {'short_name', 'directory'})
 
-# remy not working AT ALL
-# so far, you also need to update the animals_dict in pipeline.lfp_data_to_dataframe. Workin on that
 animals_dict = {
            'fra' : Animal(short_name = 'fra', directory = '/local2/Jan/Frank/Frank/'),
            'gov' : Animal(short_name = 'gov', directory = '/local2/Jan/Government/Government/'),
            'egy' : Animal(short_name = 'egy', directory = '/local2/Jan/Egypt/Egypt/'), 
            'remy': Animal(short_name = 'remy', directory = '/local2/Jan/Remy/Remy/'),
-           #"Fiv" : Animal(short_name = "Fiv", directory = "/home/dekorvyb/Downloads/Fiv"),
            "bon" : Animal(short_name = "bon", directory = "/home/dekorvyb/Downloads/Bon/"),
             "Cor" : Animal(short_name = "Cor", directory = "/home/dekorvyb/Downloads/Corriander/"),
             "con" : Animal(short_name = "con", directory = "/home/dekorvyb/Downloads/Con/"),
+            "cha" : Animal(short_name = "cha", directory = "/home/dekorvyb/Downloads/Chapati/"),
+            "dav" : Animal(short_name = "dav", directory = "/home/dekorvyb/Downloads/Dave/"),
+            
+            #"Fiv" : Animal(short_name = "Fiv", directory = "/home/dekorvyb/Downloads/Fiv"),
             #"ten" : Animal(short_name = "ten", directory = "/home/dekorvyb/Downloads/Ten/"),
             #"dud" : Animal(short_name = "dud", directory = "/home/dekorvyb/Downloads/Dudley/"),
-            "cha" : Animal(short_name = "cha", directory = "/home/dekorvyb/Downloads/Chapati/"),
-            #"Eig" : Animal(short_name = "Eig", directory = "/home/dekorvyb/Downloads/Eig/"),
-            "dav" : Animal(short_name = "dav", directory = "/home/dekorvyb/Downloads/Dave/")
+            #"Eig" : Animal(short_name = "Eig", directory = "/home/dekorvyb/Downloads/Eig/")
             }
 
 
+# might be useful to write a function which loads the cellinfo files for all animals in animals_dict.
+# so we would get an overview of all the areas that were recorded for each animal.
 
-### define animal we want to look at
-# so far, we'll only do one animal at once
+
+# define animals and areas of interest
 # if we want, we can later iterate over a list of animals, but I would add this at the very end
 animal = animals_dict["fra"]
-area_list = ["CA1", "CA3"]
+area_list = ["CA1"]
+bin_size = 5 # in ms
+window_size = 90 # in seconds
 
 
+# print(cellinfo_dict_sorted_by_area.keys()) # shows all the areas that were recorded in given animal
 cellinfo_dict_sorted_by_area = tools.create_sorted_dict_with_cellinfos(animal)
-print(cellinfo_dict_sorted_by_area.keys())
-# we now have all the neuron keys and know which brain area the belong to.
-# next, we need to find out in which epoch the animal was resting and in which epoch the animal was running
-# as far as I understood, pynapple is not yet able to support us here
-# that is because we are working with matlab files. Pynapple is written for nwb files. :(
-
-
-
-# for each experimental day, animals have a "task"-file
-# where are things specified such as the behaviour, environment, ... for each recording epoch.
-# this function returns a dict, with the different animal states as keys
-# usually, we only expect and use the states "sleep" and "run"
-# the dict shows us, on which days and in which epochs the animal was in a specific state
 
 taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
-# the two tasks above were general for all combinations
 
 
-# now, we loop through all areas that interest us.
 for area in area_list:
+    neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
+    spikes = tools.load_spikes(neuron_dict, animal, bin_size = bin_size)
+    
+    # %%
+    #print(len(spikes["wake"][4][2][0]))
+    
+    results = tools.run_mr_estimator_on_summed_activity(spikes, bin_size, window_size)
+    
+    
+    # in the code above, we converted the dataset with its specific structure into the desired format
+    # the goal is to get to the same format with other datasets too, so the rest of the code will work universally
 
-    tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
+# %%
+      
+#print(spikes["wake"][4][4])
+
+# this is great. Now we need to sum up all the neuron activity for each epoch. Then slice it. Then run mr.estimator. Then we should be finished.
+
+
+
+# %%
+
+epoch_ts_group = spikes["wake"][4][2]
+
+for i in range(len(epoch_ts_group)):
+    
+    # plt.clf()
+    
+    overall_activity = epoch_ts_group[i]
+    print(overall_activity)
+    
+    coefficients = mre.coefficients(overall_activity, dtunit='ms', dt = 5, method = 'ts')    
+    
+    output_handler = mre.fit(coefficients.coefficients, fitfunc='f_complex')
+    
+    data_to_store = {
+            'popt': output_handler.popt,
+            'ssres': output_handler.ssres,
+            'pcov': [],
+            'steps': output_handler.steps,
+            'dt': output_handler.dt,
+            'dtunit': output_handler.dtunit,
+            'quantiles': output_handler.quantiles,
+            'mrequantiles': output_handler.mrequantiles,
+            'tauquantiles': output_handler.tauquantiles,
+            'description': output_handler.description,
+            'tau': output_handler.tau,
+            'branching_factor': output_handler.mre,
+        }
+
+    
+    data_to_store = pd.DataFrame([data_to_store])
+    data_to_store.to_parquet(f"/home/dekorvyb/trash/{animal.short_name}_CA1_wake_04_02_{i}.parquet", index = True)
+    
+    
+    '''
+
+        
+    plt.plot(coefficients.steps, coefficients.coefficients, label='data')
+            
+    plt.plot(coefficients.steps, mre.f_complex(coefficients.steps, *output_handler.popt),
+                label='complex m={:.5f}'.format(output_handler.mre))
+
+    plt.legend()
+    plt.savefig(f"/home/dekorvyb/trash/graphic{i}.png")
+    '''
+
+
+
+
+
+# %%
+
+
+overall_activity = np.sum(epoch_ts_group.values, axis=1)
+
+
+coefficients = mre.coefficients(overall_activity, dtunit='steps', method = 'ts')
+output_handler = mre.fit(coefficients.coefficients, fitfunc='f_complex')
+
+       
+plt.plot(coefficients.steps, coefficients.coefficients, label='data')
+        
+plt.plot(coefficients.steps, mre.f_complex(coefficients.steps, *output_handler.popt),
+            label='complex m={:.5f}'.format(output_handler.mre))
+
+plt.legend()
+plt.savefig("/home/dekorvyb/trash/graphic.png")
+print("saved succesfully")
+# - Hoorray! It finally looks the way we want to
 
 
 # %%
