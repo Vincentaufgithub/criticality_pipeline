@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import pickle
 
 import tools
+import loren_frank_helper_functions as lf_helper
 
 
 # Creating dictionary with animal file paths
@@ -48,14 +49,15 @@ window_size = 90 # in seconds
 
 
 # print(cellinfo_dict_sorted_by_area.keys()) # shows all the areas that were recorded in given animal
-cellinfo_dict_sorted_by_area = tools.create_sorted_dict_with_cellinfos(animal)
+cellinfo_dict_sorted_by_area = lf_helper.create_sorted_dict_with_cellinfos(animal)
 
-taskinfo_dict_sorted_by_state = tools.create_sorted_dict_with_tasks(animal)
+taskinfo_dict_sorted_by_state = lf_helper.create_sorted_dict_with_tasks(animal)
 
 
 for area in area_list:
-    neuron_dict = tools.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
-    spikes = tools.load_spikes(neuron_dict, animal, bin_size = bin_size)
+    neuron_dict = lf_helper.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
+     
+    spikes = lf_helper.load_spikes(neuron_dict, animal, bin_size = bin_size)
     
     # %%
     #print(len(spikes["wake"][4][2][0]))
