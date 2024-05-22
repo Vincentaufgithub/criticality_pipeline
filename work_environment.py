@@ -46,18 +46,25 @@ animal = animals_dict["fra"]
 area_list = ["CA1"]
 bin_size = 5 # in ms
 window_size = 90 # in seconds
+dest_folder_binned_spike_trains = ""
+
+
 
 
 # print(cellinfo_dict_sorted_by_area.keys()) # shows all the areas that were recorded in given animal
 cellinfo_dict_sorted_by_area = lf_helper.create_sorted_dict_with_cellinfos(animal)
-
 taskinfo_dict_sorted_by_state = lf_helper.create_sorted_dict_with_tasks(animal)
 
 
 for area in area_list:
     neuron_dict = lf_helper.create_neuron_dicts_for_each_state(cellinfo_dict_sorted_by_area[(area,)], taskinfo_dict_sorted_by_state)
      
-    spikes = lf_helper.load_spikes(neuron_dict, animal, bin_size = bin_size)
+    binned_spike_trains = lf_helper.load_spikes(neuron_dict, animal, bin_size = bin_size)
+    # summed_activity = np.sum(binned_ts_group.values, axis=1)
+    
+    tools.save_binned_spike_trains(binned_spike_trains, dest_folder_binned_spike_trains)
+    
+    
     
     # %%
     #print(len(spikes["wake"][4][2][0]))
