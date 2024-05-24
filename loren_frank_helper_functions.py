@@ -210,8 +210,12 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
             for epoch_index in neuron_dict[state_index][day_index]:
                 
                 
+                
                 epoch = loaded_spikes_file['spikes'][0, -1][0, epoch_index-1][0, 0][0, 0]["timerange"][0][0][0]
-                epoch = nap.IntervalSet(start = epoch[0] /1000, end = epoch[1] /1000, time_units='s')
+                
+                # time range is given in 10 kHz units
+                epoch = nap.IntervalSet(start = int(epoch[0] /10000), end = int(epoch[1] /10000), time_units='s')
+                #print(epoch)
                 
                 grouped_epoch_time_series = grouped_time_series(neuron_dict[state_index][day_index][epoch_index],
                                                                 loaded_spikes_file,
@@ -223,9 +227,12 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
                     binned_ts_group = grouped_epoch_time_series.count(bin_size = bin_size, time_units = "ms", ep = epoch)
                     
                     #with np.printoptions(threshold=np.inf):
-                     #  print(binned_ts_group)
+                     #   print(binned_ts_group)
 
-                    return_dict[state_index][day_index][epoch_index] = binned_ts_group
+                    
+                    # as it turns out, it is easier to store the data here instead of the pynapple object
+                    # -> is a 2D-numpy array, columns being the individual spike trains in 5ms bins
+                    return_dict[state_index][day_index][epoch_index] = binned_ts_group.data()
                 
                 else:
                     print(f"no spiking data for epoch: {state_index}, day {day_index}, epoch {epoch_index}")
@@ -392,6 +399,7 @@ def grouped_time_series(epoch_neuron_keys, loaded_file, animal):
             spike_time = loaded_file['spikes'][0, -1][0, int(epoch_number)-1][0, int(tetrode_number)-1][0, int(neuron_number)-1][0]['data'][0][:, 0]
             ts = nap.Ts(t = spike_time, time_units= "s")       
             epoch_dict[neuron_key_index] = ts
+            # print("first:", ts[0])
 
                     
         except:
