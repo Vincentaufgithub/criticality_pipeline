@@ -210,8 +210,9 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
             for epoch_index in neuron_dict[state_index][day_index]:
                 
                 
-                
-                epoch = loaded_spikes_file['spikes'][0, -1][0, epoch_index-1][0, 0][0, 0]["timerange"][0][0][0]
+                epoch = get_epoch_timerange(loaded_spikes_file['spikes'][0, -1][0, epoch_index-1])
+               
+                # epoch = loaded_spikes_file['spikes'][0, -1][0, epoch_index-1][0, 0][0, 0]["timerange"][0][0][0]
                 
                 # time range is given in 10 kHz units
                 epoch = nap.IntervalSet(start = int(epoch[0] /10000), end = int(epoch[1] /10000), time_units='s')
@@ -381,6 +382,20 @@ def add_neuron_keys_to_state_dict(get_epochs_per_day_dict, neuron_id_list):
                     inner_dict[value].append('_'.join(neuron_id))
         epochs_per_day_dict[key] = inner_dict
     return epochs_per_day_dict
+
+
+
+
+# definitely have to add some error handling here
+def get_epoch_timerange(df):
+    for tetrode in range(df.shape[1]):
+        for neuron in range(df[0,tetrode].shape[1]):
+            try:
+                timerange = df[0, tetrode][0, neuron]["timerange"][0][0][0]
+                return timerange
+            
+            except:
+                continue
 
 
 
