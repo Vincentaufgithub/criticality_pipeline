@@ -161,9 +161,10 @@ def create_neuron_dicts_for_each_state(cellinfo_df, taskinfo_dict):
 
 def load_spikes(neuron_dict, animal, bin_size = 5):
     '''
-    given a dict with neuron_keys, this function will load all the spiking times of one epoch into a grouped pynapple time series.
-    It will then bin the data and finally sum up the bins of all neurons.
-    Returns a dict with the same structure as the input.
+    given a dict with neuron_keys, this function will load the spiking timestamps for each neuron.
+    Taking the recording timerange as reference, the spiking times will then be binned into the given bin_size, thus creating spike trains.
+    All spike trains for one epoch will have the same length and be stored in a joined numpy array.
+    Returns a dict identical to the input structure, but the list of neuron_keys will be replaced by the np.array of spike trains.
     ---------------------
     parameters
     
@@ -186,7 +187,7 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
     
     bin_size : int
         optional
-        size to bin spiking series in, in ms
+        size to bin spiking series in ms
     
     ------------------
     returns
@@ -194,8 +195,12 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
     
     neuron_dict : dictionary
         Same dict structure as input dict.
-        However, neuron_dict[state][day][epoch] will give a pynapple tsGroup object
-        The object contains the recorded neurons for a certain epoch. Spikes are already binned
+        
+        However, neuron_dict[state][day][epoch] will give a 2-D np.array
+        With dimensions [n_neurons, n_bins] ; n_bins will be total epoch recording time in ms, divided by the bin size
+        
+        If no spiking data is present, the returned dict will have "None" for that epoch.
+        
     '''
 
     return_dict = neuron_dict.copy()
@@ -211,16 +216,9 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
                 
                 
                 epoch = get_epoch_timerange(loaded_spikes_file['spikes'][0, -1][0, epoch_index-1])
-               
-                # epoch = loaded_spikes_file['spikes'][0, -1][0, epoch_index-1][0, 0][0, 0]["timerange"][0][0][0]
-                
-                # time range is given in 10 kHz units
-                epoch = nap.IntervalSet(start = int(epoch[0] /10000), end = int(epoch[1] /10000), time_units='s')
-                #print(epoch)
                 
                 grouped_epoch_time_series = grouped_time_series(neuron_dict[state_index][day_index][epoch_index],
-                                                                loaded_spikes_file,
-                                                                animal)
+                                                                loaded_spikes_file)
         
                 
                 if np.any(grouped_epoch_time_series):
@@ -275,6 +273,7 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
 
 
 def group_df_to_dict(df, label):
+    
     dfs = {}
     for idx, group in df.groupby([label]):
         dfs[idx] = group.copy()
@@ -386,13 +385,20 @@ def add_neuron_keys_to_state_dict(get_epochs_per_day_dict, neuron_id_list):
 
 
 
-# definitely have to add some error handling here
+
 def get_epoch_timerange(df):
+    '''
+    iterate over all tetrodes and neurons for one epoch, till timerange is found
+    -> bc timerange will be the same for each neuron in one epoch.
+    '''
     for tetrode in range(df.shape[1]):
         for neuron in range(df[0,tetrode].shape[1]):
             try:
                 timerange = df[0, tetrode][0, neuron]["timerange"][0][0][0]
-                return timerange
+                
+                # timerange is given in 10kHz unit. Convert to seconds and create pynapple object.
+                epoch = nap.IntervalSet(start = int(timerange[0] /10000), end = int(timerange[1] /10000), time_units='s')
+                return epoch
             
             except:
                 continue
@@ -401,7 +407,11 @@ def get_epoch_timerange(df):
 
 
 
-def grouped_time_series(epoch_neuron_keys, loaded_file, animal):
+def grouped_time_series(epoch_neuron_keys, loaded_file):
+    '''
+    tries to access the timestamps and create a pynapple time_series object for each neuron in recording epoch.
+    Will integrate all time series into a pynapple TsGroup object.
+    '''
     epoch_dict = {}
                 
     for neuron_key_index, neuron_key_str in enumerate(epoch_neuron_keys):
