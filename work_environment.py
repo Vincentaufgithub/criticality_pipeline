@@ -32,8 +32,8 @@ animals_dict = {
 # so we would get an overview of all the areas that were recorded for each animal.
 
 
-animal_list = ["gov", "egy"] # done for: frank, bond
-area_list = ["CA1", "CA3"]
+animal_list = ["Cor"] # done for: frank, bond, gov, egy
+area_list = ["CA1", "CA3"] 
 bin_size = 5 # in ms
 window_size = 90 # in seconds
 dest_folder_binned_spike_trains = "/local2/Vincent/binned_spiking_data/"
@@ -54,12 +54,14 @@ for animal_name in animal_list:
         
         binned_spike_trains = lf_helper.load_spikes(neuron_dict, animal, bin_size = bin_size)
 
+        # we can now apply the universal functions
+        # the functions themselves will iterate over the dict-structure of binned_spike_trains
+        # maybe, it would be more elegant to implement the iteration here, in the work_env, to make the tools - functions independent of the dict structure
+        
         tools.save_binned_spike_trains(binned_spike_trains, dest_folder_binned_spike_trains, key)
         
         tools.run_mr_estimator_on_summed_activity(binned_spike_trains, bin_size, window_size, dest_folder_mr_analysis, key)
         
         
-        # in the code above, we converted the dataset with its specific structure into the desired format
-        # the goal is to get to the same format with other datasets too, so the rest of the code will work universally
 
 # %%
