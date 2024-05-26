@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import utilities.load_spiking_times as spikes
-
+import matplotlib.pyplot as plt
 import mrestimator as mre
 
 
@@ -119,9 +119,12 @@ def run_mr_estimator_on_summed_activity(neuron_dict, bin_size, window_size, dest
                     
                     try:
                         coefficients = mre.coefficients(chunk, dtunit='ms', dt = bin_size, method = 'ts')    
-                            
+                        
+                        
+                        
                         output = mre.fit(coefficients.coefficients, fitfunc='f_complex')
-                            
+
+                        
                         data_to_store = {
                                 'popt': output.popt,
                                 'ssres': output.ssres,
@@ -140,6 +143,7 @@ def run_mr_estimator_on_summed_activity(neuron_dict, bin_size, window_size, dest
                             
                         data_to_store = pd.DataFrame([data_to_store])
                         filename = f"{dest_folder}{key[0]}_{key[1]}_{state_index}_{day_index:02d}_{epoch_index:02d}_{n_chunk:02d}.parquet"
+                        
                         data_to_store.to_parquet(filename, index = True)
                         
                         print("analysed and saved", filename)
@@ -157,5 +161,13 @@ def run_mr_estimator_on_summed_activity(neuron_dict, bin_size, window_size, dest
 
 
 
+def create_and_save_graph(coefficients, output_handler):
+    plt.plot(coefficients.steps, coefficients.coefficients, label='data')
+            
+    plt.plot(coefficients.steps, mre.f_complex(coefficients.steps, *output_handler.popt),
+                label='complex m={:.5f}'.format(output_handler.mre))
 
+    plt.legend()
+    plt.savefig(f"/local2/Vincent/graphs/example_graphic.png")
+    print("SAVED FIG")
 
