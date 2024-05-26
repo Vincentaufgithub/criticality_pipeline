@@ -57,24 +57,25 @@ def help_func(string):
 
 
 
-former_filenames = glob.glob("/local2/Vincent/ts_90s/_fra_CA1_wake_4_2_*")
-former_filenames.sort(key = help_func)
+former_filenames = glob.glob("/home/dekorvyb/trash/_fra_CA3_wake_2_*")
+# former_filenames.sort(key = help_func)
 print(former_filenames)
 
 former_values = []
 for element in former_filenames:
-    former_values.append(pd.read_parquet(element))
+    former_values.append((pd.read_parquet(element)["tau"], element))
     
 
  
-new_filenames = glob.glob("/home/dekorvyb/trash/fra_CA1_wake_04_02_*.parquet")
-new_filenames.sort(key = help_func)
+new_filenames = glob.glob("/local2/Vincent/mr_analysis_with_new_pipeline/fra_CA3_wake_02_*")
+# new_filenames.sort(key = help_func)
 print(new_filenames)
 
 
 new_values = []
 for element in new_filenames:
-    new_values.append(pd.read_parquet(element))
+    new_values.append((pd.read_parquet(element)["tau"], element))
+
 
 
 for i in range(len(former_values)): 
