@@ -171,3 +171,70 @@ def create_and_save_graph(coefficients, output_handler):
     plt.savefig(f"/local2/Vincent/graphs/example_graphic.png")
     print("SAVED FIG")
 
+
+
+
+
+
+def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, filename):
+    
+    if not np.any(data):
+        return
+    
+    
+    slice_size = slice_size = int((window_size * 1000) / bin_size)
+    
+    
+    # I find this important to estimate the quality of the analysis result
+    num_neurons = data.shape[1]
+                
+    # sum up all spike occurrences for one epoch
+    data = np.sum(data, axis=1)
+                    
+    # slicing
+    time_chunks = spikes.activity_series_to_time_chunks(
+        data,slice_size)
+                    
+                    
+    for n_chunk, chunk in enumerate(time_chunks):
+                    
+        if np.all(chunk == 0):
+            print("chunk empty")
+            continue
+                    
+        try:
+            coefficients = mre.coefficients(chunk, dtunit='ms', dt = bin_size, method = 'ts')    
+                        
+                        
+                        
+            output = mre.fit(coefficients.coefficients, fitfunc = fit_func)
+
+                        
+            data_to_store = {
+                    'popt': output.popt,
+                    'ssres': output.ssres,
+                    'steps': output.steps,
+                    'dt': output.dt,
+                    'dtunit': output.dtunit,
+                    'quantiles': output.quantiles,
+                    'mrequantiles': output.mrequantiles,
+                    'tauquantiles': output.tauquantiles,
+                    'description': output.description,
+                    'tau': output.tau,
+                    'branching_factor': output.mre,
+                    'num_neurons': num_neurons
+                }
+
+                            
+            data_to_store = pd.DataFrame([data_to_store])
+                        
+            data_to_store.to_parquet(f'{filename}{n_chunk:02d}', index = True)
+                        
+            print("analysed and saved", filename)
+            print("tau =", output.tau, "branching_factor =", output.mre)
+                    
+                    
+        except Exception as e:
+            print(e, "; no Analysis possible")
+            
+    return
