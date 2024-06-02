@@ -53,13 +53,13 @@ def create_sorted_dict_with_cellinfos(animal):
         for epoch_ind, epoch in enumerate(day[0].T)
         ]).sort_index()
     
-    # print all the areas that were recorded
-    # print(neuron_info_dataframe.columns.names)
+
     
     # sort the information according to recording area into a dict
     neuron_info_dict = group_df_to_dict(neuron_info_dataframe, "area")
     
-    return neuron_info_dict
+    recorded_areas = list(neuron_info_dict.keys())
+    return neuron_info_dict, recorded_areas
 
 
 
@@ -234,7 +234,7 @@ def load_spikes(neuron_dict, animal, bin_size = 5):
                     return_dict[state_index][day_index][epoch_index] = binned_ts_group.data()
                 
                 else:
-                    print(f"no spiking data for epoch: {state_index}, day {day_index}, epoch {epoch_index}")
+                    print(f"Failed to create time series for {animal.short_name}, {state_index}, day {day_index}, epoch {epoch_index}")
                     return_dict[state_index][day_index][epoch_index] = None
 
     
@@ -431,11 +431,11 @@ def grouped_time_series(epoch_neuron_keys, loaded_file):
             print("No spiking data for neuron:", neuron_key_str)
 
 
-    if not epoch_dict:
+    try:
+        # restructure the dict, so the trains will be numbered evenly 
+        sorted_epoch_dict = {i: epoch_dict[key] for i, key in enumerate(epoch_dict)}
+        # all spike trains of one epoch are integrated in a pynapple tsGroup
+        return nap.TsGroup(sorted_epoch_dict)
+    
+    except:
         return None
-    
-    # restructure the dict, so the trains will be numbered evenly 
-    sorted_epoch_dict = {i: epoch_dict[key] for i, key in enumerate(epoch_dict)}
-    
-    # all spike trains of one epoch are integrated in a pynapple tsGroup
-    return nap.TsGroup(sorted_epoch_dict)
