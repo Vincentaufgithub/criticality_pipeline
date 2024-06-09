@@ -3,7 +3,7 @@
 from collections import namedtuple
 
 import tools
-import loren_frank_helper_functions as lf_helper
+import loren_frank_data.loren_frank_helper_functions as lf_helper
 
 
 # Creating dictionary with animal file paths
