@@ -128,6 +128,26 @@ import loren_frank_helper_functions as lf_helper
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# %%
+
 epoch_ts_group = spikes["wake"][4][2]
 
 for i in range(len(epoch_ts_group)):
@@ -236,3 +256,51 @@ plt.savefig("/home/dekorvyb/trash/graphic.png")
 print("saved succesfully")
 # - Hoorray! It finally looks the way we want to
 print("test for github")
+
+
+
+
+
+
+
+
+
+
+
+
+# %%
+import glob
+import numpy as np
+import tools
+
+
+extreme_values = ["/local2/Vincent/binned_spiking_data/gov_CA1_wake_03_02_*",
+            "/local2/Vincent/binned_spiking_data/egy_CA3_wake_04_04_*",
+            "/local2/Vincent/binned_spiking_data/gov_DG_wake_04_04_*",
+            "/local2/Vincent/binned_spiking_data/gov_CA1_wake_03_04_*",
+            "/local2/Vincent/binned_spiking_data/gov_DG_wake_04_04_*" ,
+            "/local2/Vincent/binned_spiking_data/dud_CA1_wake_03_02_*" ,
+            "/local2/Vincent/binned_spiking_data/cha_CA3_wake_07_02_*",
+            "/local2/Vincent/binned_spiking_data/gov_DG_wake_04_04_*",
+            "/local2/Vincent/binned_spiking_data/gov_CA1_wake_03_02_*",
+            "/local2/Vincent/binned_spiking_data/cha_CA3_wake_07_02_*"]
+
+
+for n, epoch in enumerate(extreme_values):
+  
+    arrays = [np.load(file).reshape(-1, 1) for file in glob.glob(epoch)]
+    data = np.concatenate(arrays, axis=1)
+
+    tools.mr_estimator_for_prepared_epoch_data(
+        data, window_size= 90, bin_size=5, fit_func = "f_exponential_offset", filename=f"/home/dekorvyb/trash/extremes{epoch[-20:-5]}{n:02d}"
+    )
+
+
+
+
+
+
+
+
+
+# %%

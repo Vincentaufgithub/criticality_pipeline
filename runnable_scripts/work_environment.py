@@ -15,25 +15,24 @@ animals_dict = {
            'gov' : Animal(short_name = 'gov', directory = '/local2/Jan/Government/Government/'),
            'egy' : Animal(short_name = 'egy', directory = '/local2/Jan/Egypt/Egypt/'), 
            'remy': Animal(short_name = 'remy', directory = '/local2/Jan/Remy/Remy/'), # doesn't work, sadly
-            # "bon" : Animal(short_name = "bon", directory = "/home/dekorvyb/Downloads/Bon/"),
+            "bon" : Animal(short_name = "bon", directory = "/home/dekorvyb/Downloads/Bon/"),
             "Cor" : Animal(short_name = "Cor", directory = "/home/dekorvyb/Downloads/Corriander/"),
-            # "con" : Animal(short_name = "con", directory = "/home/dekorvyb/Downloads/Con/"),
+            "con" : Animal(short_name = "con", directory = "/home/dekorvyb/Downloads/Con/"),
             "cha" : Animal(short_name = "cha", directory = "/home/dekorvyb/Downloads/Chapati/"),
-            "dav" : Animal(short_name = "dav", directory = "/home/dekorvyb/Downloads/Dave/"),
-            
-            #"Fiv" : Animal(short_name = "Fiv", directory = "/home/dekorvyb/Downloads/Fiv"),
-            #"ten" : Animal(short_name = "ten", directory = "/home/dekorvyb/Downloads/Ten/"),
-            #"dud" : Animal(short_name = "dud", directory = "/home/dekorvyb/Downloads/Dudley/"),
-            #"Eig" : Animal(short_name = "Eig", directory = "/home/dekorvyb/Downloads/Eig/")
+            "dav" : Animal(short_name = "dav", directory = "/home/dekorvyb/Downloads/Dave/"),   
+            "Fiv" : Animal(short_name = "Fiv", directory = "/home/dekorvyb/Downloads/Fiv/"),
+            "ten" : Animal(short_name = "ten", directory = "/home/dekorvyb/Downloads/Ten/"),
+            "dud" : Animal(short_name = "dud", directory = "/home/dekorvyb/Downloads/Dudley/"),
+            "Eig" : Animal(short_name = "Eig", directory = "/home/dekorvyb/Downloads/Eig/"),
+            "mil" : Animal(short_name = "mil", directory = "/home/dekorvyb/Downloads/Mil/")
             }
-
+# -> 11 animals in total (remy, Eig and Fiv don't work so far)
 
 # might be useful to write a function which loads the cellinfo files for all animals in animals_dict.
 # so we would get an overview of all the areas that were recorded for each animal.
 
-# still missing for dave, dudley
-# and for Fiv, Ten, Mil?
-animal_list = ["Cor", "cha"] # CA1 and CA3 done for: frank, bond, gov, egy, cha, con, cor
+# still missing for Fiv, ten, Mil, Eig
+animal_list = ["ten", "mil"] # CA1 and CA3 done for: frank, bond, gov, egy, cha, con, cor, dav
 
 
 bin_size = 5 # in ms
@@ -61,7 +60,7 @@ for animal_name in animal_list:
 
     for area in recorded_areas:
             
-        if area[0] == "CA1" or area[0] == "CA3" or area[0] == "???":
+        if area[0] == "???":
             continue # because I did them already
             
             
