@@ -161,15 +161,17 @@ def run_mr_estimator_on_summed_activity(neuron_dict, bin_size, window_size, dest
 
 
 
-def create_and_save_graph(coefficients, output_handler):
+def create_and_save_graph(coefficients, output_handler, id):
     plt.plot(coefficients.steps, coefficients.coefficients, label='data')
             
-    plt.plot(coefficients.steps, mre.f_complex(coefficients.steps, *output_handler.popt),
+    plt.plot(coefficients.steps, mre.f_exponential_offset(coefficients.steps, *output_handler.popt),
                 label='complex m={:.5f}'.format(output_handler.mre))
 
     plt.legend()
-    plt.savefig(f"/local2/Vincent/graphs/example_graphic.png")
-    print("SAVED FIG")
+    plt.savefig(f"/local2/Vincent/graphs/extreme_{id}.png")
+    print("saved graph to:", f"/local2/Vincent/graphs/extreme_{id}.png" )
+    plt.clf()
+
 
 
 
@@ -197,7 +199,7 @@ def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, 
                     
                     
     for n_chunk, chunk in enumerate(time_chunks):
-                    
+        
         if np.all(chunk == 0):
             print("chunk empty")
             continue
@@ -228,10 +230,11 @@ def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, 
                             
             data_to_store = pd.DataFrame([data_to_store])
                         
-            data_to_store.to_parquet(f'{filename}{n_chunk:02d}', index = True)
+            data_to_store.to_parquet(f'{filename}_{n_chunk:02d}.parquet', index = True)
                         
-            print("analysed and saved", filename)
+            print("analysed and saved", f'{filename}{n_chunk:02d}.parquet')
             print("tau =", output.tau, "branching_factor =", output.mre)
+            create_and_save_graph(coefficients, output, f"{filename[-17:-1]}_{n_chunk}")
                     
                     
         except Exception as e:
