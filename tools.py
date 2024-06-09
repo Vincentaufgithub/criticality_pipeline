@@ -184,7 +184,7 @@ def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, 
         return
     
     
-    slice_size = slice_size = int((window_size * 1000) / bin_size)
+    slice_size = int((window_size * 1000) / bin_size)
     
     
     # I find this important to estimate the quality of the analysis result
@@ -234,10 +234,31 @@ def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, 
                         
             print("analysed and saved", f'{filename}{n_chunk:02d}.parquet')
             print("tau =", output.tau, "branching_factor =", output.mre)
-            create_and_save_graph(coefficients, output, f"{filename[-17:-1]}_{n_chunk}")
+            create_and_save_graph(coefficients, output, f"{filename}_{n_chunk}")
                     
                     
         except Exception as e:
             print(e, "; no Analysis possible")
             
     return
+
+
+
+
+def bin_time_stamps(timestamps, bin_size):
+    '''
+    parameters
+    
+    timestamps : np.array
+        contains timestamps of spikes in seconds
+    
+    bin_size : int
+        size of bins, in ms
+        
+    '''
+    if timestamps.size == 0:
+        return
+    
+    bin_size = bin_size / 1000
+    end_time = timestamps[-1]
+    
