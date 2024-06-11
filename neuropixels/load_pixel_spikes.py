@@ -84,15 +84,22 @@ area_list = ['CA1', 'CA2', 'CA3', 'DG', 'SUB', 'ProS']
 target_dir_between = "/local2/Vincent/neuro_pixels_binned_spiking_data/"
 target_dir_final = "/local2/Vincent/neuro_pixels_output/"
 
-session_id = 715093703
-session = cache.get_session_data(session_id)
+
+session_table = cache.get_session_table()
+session_list = session_table.index.values
 
 
-for area in area_list:
-    unit_ids = session.units[session.units["ecephys_structure_acronym"] == area]
-    unit_ids = unit_ids.index.values
-
-    file_base_name = f"{target_dir_between}{session_id}_{area}"
+for session_id in session_list:
+    
+    try:
+        session = cache.get_session_data(session_id)
+        print("SESSION:", session)
+        
+        for area in area_list:
+            try:
+                print("TRY AREA:", area)
+                unit_ids = session.units[session.units["ecephys_structure_acronym"] == area]
+                unit_ids = unit_ids.index.values
 
     data = session.spike_times
 
