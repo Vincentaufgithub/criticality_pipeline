@@ -103,13 +103,21 @@ for session_id in session_list:
 
                 data = session.spike_times
 
-    binned_activity = get_binned_activity(data, unit_ids, bin_size, file_base_name)
+                binned_activity = get_binned_activity(data, unit_ids, bin_size, f"{target_dir_between}{session_id}_{area}")
+                
+        
+                tools.mr_estimator_for_prepared_epoch_data(data = binned_activity,
+                                                        window_size = window_size,
+                                                        bin_size = bin_size,
+                                                        fit_func = "f_exponential_offset",
+                                                        filename = f"{target_dir_final}{session_id}_{area}")
+            
+            except:
+                print("failed for session", session_id, ", area", area)
+                continue
     
-    tools.mr_estimator_for_prepared_epoch_data(data = binned_activity,
-                                               window_size = window_size,
-                                               bin_size = bin_size,
-                                               fit_func = "f_complex",
-                                               filename = target_dir_final)
-
+    except:
+        print("failed for session", session_id)
+        continue
 
 # %%
