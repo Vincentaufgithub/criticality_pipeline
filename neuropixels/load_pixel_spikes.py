@@ -1,11 +1,19 @@
 # %%
-
+import sys
 import os
+
+# Add the parent directory to the system path
+# somehow necessary for import of tools
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import tools
+
 import glob
 import pynapple as nap
 from allensdk.brain_observatory.ecephys.ecephys_project_cache import EcephysProjectCache
 import tools
 import numpy as np
+import math
+
 
 
 def find_nwb_files(root_dir):
