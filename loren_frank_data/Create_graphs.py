@@ -93,3 +93,75 @@ tools.mr_estimator_for_prepared_epoch_data(data, window_size= 90,
                                                )
 
 # %%
+
+
+# correlate f_complex and f_exponential_offset
+
+import os
+import numpy as np
+import glob
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+# COMPLEX
+directory_complex = '/local2/Vincent/mr_analysis_with_new_pipeline/'
+file_list_complex = sorted([file for file in os.listdir(directory_complex)])
+
+
+# EXPONENTIAL_OFFSET 
+directory_expo = '/local2/Vincent/mr_analysis_with_exponential/'
+file_list_expo = sorted([file for file in os.listdir(directory_expo)])
+
+
+set_complex = set(file_list_complex)
+set_expo = set(file_list_expo)
+
+# Step 2: Identify common elements
+common_elements = list(set_complex.intersection(set_expo))
+
+
+
+
+tau_list_complex = []
+tau_list_expo = []
+
+
+for file in common_elements:
+    tau_1 = pd.read_parquet(f'{directory_complex}{file}')["tau"][0]
+    if tau_1 <= 0 or tau_1 >= 3000:
+        continue
+    
+    
+    tau_2 = pd.read_parquet(f'{directory_expo}{file}')["tau"][0]
+    # imputing values because the exponential function doesn't have a cutoff.
+    if tau_2 <= 0 or tau_2 >= 3000:
+        continue
+    
+    
+    tau_list_complex.append(tau_1)
+    tau_list_expo.append(tau_2)
+    
+
+correlation_matrix = np.corrcoef(tau_list_complex, tau_list_expo)
+correlation_coefficient = correlation_matrix[0, 1]
+
+print(correlation_coefficient)
+
+
+plt.scatter(tau_list_complex, tau_list_expo, color='blue', marker='o', s=20, alpha = 0.25, edgecolors="none")
+
+sns.regplot(x= tau_list_complex, y= tau_list_expo, scatter=False, color='red')
+
+plt.xlabel("Tau values for f_complex")
+plt.ylabel("Tau values for f_exponential_offset")
+
+plt.suptitle("Correlating f_complex and f_exponential_offset, corrected for artefacts")
+plt.title(f'r = {correlation_coefficient:.2f}', fontsize = 10)
+plt.show()
+    
+plt.savefig('/local2/Vincent/graphs/correlation_complex_expo_1.png')
+
+
+# %%
