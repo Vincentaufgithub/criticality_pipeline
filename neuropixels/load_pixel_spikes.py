@@ -45,10 +45,14 @@ def get_binned_activity(spike_dict, id_list, bin_size, file_key = None):
     bin_size = bin_size / 1000
     
     time_series_list = [spike_dict[id] for id in id_list]
- 
+    
+    # get time of first spike (sometimes there's on offset of up to 11s. We will cut it off)
+    first_spike = min(time_series[0] for time_series in time_series_list)
+    start_time = round( math.floor(first_spike / bin_size) * bin_size , 3)
+    print("start time:", start_time)
     end_time = max(time_series[-1] for time_series in time_series_list)
     
-    bin_edges = np.arange(0, end_time + bin_size, bin_size) # create grid to bin time series onto
+    bin_edges = np.arange(start_time, end_time + bin_size, bin_size) # create grid to bin time series onto
     
     # create empty 2-d array. The binned time series will be integrated into the return_array
     return_array = np.zeros((len(bin_edges)-1, len(id_list)), dtype=int)
