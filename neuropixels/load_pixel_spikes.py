@@ -77,15 +77,12 @@ def get_binned_activity(spike_dict, id_list, bin_size, file_key = None):
 
 
 
-
-
-
-cache = EcephysProjectCache.from_warehouse(manifest = '/local2/Jan/ecephys_data/manifest.json')
+cache = EcephysProjectCache.from_warehouse(manifest = '/local2/Vincent/neuro_pixels_sessions/manifest.json')
 bin_size = 5
 window_size = 90
-area_list = ["CA1"]
+area_list = ['CA1', 'CA2', 'CA3', 'DG', 'SUB', 'ProS']
 target_dir_between = "/local2/Vincent/neuro_pixels_binned_spiking_data/"
-target_dir_final = ""
+target_dir_final = "/local2/Vincent/neuro_pixels_output/"
 
 session_id = 715093703
 session = cache.get_session_data(session_id)
