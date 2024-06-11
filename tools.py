@@ -230,11 +230,9 @@ def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, 
                             
             data_to_store = pd.DataFrame([data_to_store])
                         
-            data_to_store.to_parquet(f'{filename}_{n_chunk:02d}.parquet', index = True)
+            data_to_store.to_parquet(f'{filename}_{n_chunk:03d}.parquet', index = True)
                         
-            print("analysed and saved", f'{filename}{n_chunk:02d}.parquet')
-            print("tau =", output.tau, "branching_factor =", output.mre)
-            create_and_save_graph(coefficients, output, f"{filename}_{n_chunk}")
+            print("analysed and saved", f'{filename}{n_chunk:03d}.parquet')
                     
                     
         except Exception as e:
