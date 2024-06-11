@@ -101,7 +101,7 @@ for session_id in session_list:
                 unit_ids = session.units[session.units["ecephys_structure_acronym"] == area]
                 unit_ids = unit_ids.index.values
 
-    data = session.spike_times
+                data = session.spike_times
 
     binned_activity = get_binned_activity(data, unit_ids, bin_size, file_base_name)
     
