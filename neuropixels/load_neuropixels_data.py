@@ -42,8 +42,7 @@ sessions = cache.get_session_table()
 
 # Filter sessions based on your criteria
 filtered_sessions = sessions[
-    (sessions.ecephys_structure_acronyms.apply(lambda acronyms: any(area in acronyms for area in ['CA1', 'CA3', 'DG', 'SUB', 'ProS'])))
-]
+    (sessions.ecephys_structure_acronyms.apply(lambda acronyms: any(area in acronyms for area in ['CA1', 'CA3', 'DG', 'SUB', 'ProS'])))]
 
 # Loop through filtered sessions and download data
 for session_id in filtered_sessions.index.values:
