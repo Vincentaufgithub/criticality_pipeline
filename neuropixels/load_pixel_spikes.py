@@ -8,7 +8,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import tools
 
 import glob
-import pynapple as nap
 from allensdk.brain_observatory.ecephys.ecephys_project_cache import EcephysProjectCache
 import numpy as np
 import math
