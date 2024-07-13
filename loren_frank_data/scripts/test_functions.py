@@ -304,3 +304,29 @@ for n, epoch in enumerate(extreme_values):
 
 
 # %%
+
+import os
+import re
+
+# Function to count unique 9-digit prefixes
+def count_unique_prefixes(directory):
+    unique_prefixes = set()
+
+    # Regular expression to match the first 9 digits
+    regex = re.compile(r'^\d{9}')
+
+    # Iterate through all files in the directory
+    for filename in os.listdir(directory):
+        # Match the first 9 digits in the filename
+        match = regex.match(filename)
+        if match:
+            unique_prefixes.add(match.group())
+
+    return len(unique_prefixes)
+
+# Example usage
+directory_path = '/local2/Vincent/neuro_pixels_output/'
+unique_prefix_count = count_unique_prefixes(directory_path)
+print(f"Number of unique 9-digit prefixes: {unique_prefix_count}")
+
+# %%
