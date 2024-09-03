@@ -178,7 +178,7 @@ def create_and_save_graph(coefficients, output_handler, id):
 
 
 
-def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, filename):
+def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, filename, input_steps : tuple = None):
     
     if not np.any(data):
         return
@@ -205,7 +205,7 @@ def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, 
             continue
                     
         try:
-            coefficients = mre.coefficients(chunk, dtunit='ms', dt = bin_size, method = 'ts')    
+            coefficients = mre.coefficients(chunk, dtunit='ms', dt = bin_size, method = 'ts', steps = input_steps)    
                         
                         
                         

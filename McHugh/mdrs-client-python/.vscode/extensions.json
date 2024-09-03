@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "ms-python.flake8",
+    "ms-python.vscode-pylance",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-xml",
+    "njpwerner.autodocstring",
+    "mosapride.zenkaku",
+    "streetsidesoftware.code-spell-checker"
+  ]
+}

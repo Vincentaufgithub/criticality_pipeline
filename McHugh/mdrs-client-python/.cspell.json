@@ -1,0 +1,22 @@
+{
+  "version": "0.2",
+  "language": "en,en-gb",
+  "ignoreWords": [
+    "followlinks",
+    "getframe",
+    "pycache",
+    "pydantic",
+    "toolbelt",
+    "UNLCK"
+  ],
+  "words": [
+    "chacl",
+    "kikan",
+    "mdrs",
+    "mdrsclient",
+    "neurodata",
+    "Neuroinformatics",
+    "RIKEN"
+  ],
+  "ignorePaths": [".env", "__pycache__"]
+}
