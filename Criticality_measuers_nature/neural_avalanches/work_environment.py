@@ -86,7 +86,7 @@ filepath = "/local2/Vincent/power_laws/loren_frank/"
 results = [f for f in os.listdir(filepath) if f.endswith(".parquet")]
 
 big_df = []
-
+ 
 for result in results:
     # Create a new DataFrame for each result file
     df = pd.DataFrame()
