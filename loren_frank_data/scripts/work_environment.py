@@ -48,7 +48,7 @@ for animal_name in animal_list:
     try:
         cellinfo_dict_sorted_by_area, recorded_areas = lf_helper.create_sorted_dict_with_cellinfos(animal)
         taskinfo_dict_sorted_by_state = lf_helper.create_sorted_dict_with_tasks(animal)
-        print(recorded_areas)
+        print(recorded_areas) 
     
     except Exception as e:
         print(e)
