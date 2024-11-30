@@ -1,3 +1,5 @@
+# collects all .ntt files across the nested folder structure
+
 #%%
 from pathlib import Path
 import os
