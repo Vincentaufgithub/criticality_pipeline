@@ -44,7 +44,7 @@ def save_binned_spike_trains(neuron_dict, destination_folder, key):
                     filename = f"{destination_folder}{key[0]}_{key[1]}_{state_index}_{day_index:02d}_{epoch_index:02d}_{neuron:02d}.npy"
                     np.save(filename, epoch_data[:,neuron])
                     
-    return
+    return 
 
 
 
@@ -179,7 +179,7 @@ def create_and_save_graph(coefficients, output_handler, id):
 
 
 
-def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, filename, input_steps : tuple = None):
+def mr_estimator_for_numpy(data, window_size, bin_size, fit_func, filename, input_steps : tuple = None):
     '''
     Runs Mr.Estimator on numpy array of spike trains binned to 5ms.
     
@@ -245,7 +245,7 @@ def mr_estimator_for_prepared_epoch_data(data, window_size, bin_size, fit_func, 
                             
             data_to_store = pd.DataFrame([data_to_store])
                         
-            data_to_store.to_parquet(f'{filename}{n_chunk:03d}.parquet', index = True)
+            data_to_store.to_parquet(f'{filename}_{n_chunk:03d}.parquet', index = True)
                         
             print("analysed and saved", f'{filename}_{n_chunk:03d}.parquet')
                     
