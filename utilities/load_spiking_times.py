@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.io import loadmat
-import pynapple as nap
+# import pynapple as nap
 from collections import namedtuple
 import pandas as pd
 
